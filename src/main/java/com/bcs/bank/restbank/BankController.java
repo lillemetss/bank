@@ -40,6 +40,10 @@ public class BankController {
      public RequestResult addNewTransaction(@RequestBody TransactionDto transactionDto) {
         return transactionService.addNewTransaction(bank,transactionDto);
      }
+    @PostMapping("/receive/transaction")
+    public RequestResult receiveNewTransaction(@RequestBody TransactionDto transactionDto) {
+        return transactionService.ReceiveNewTransaction(bank,transactionDto);
+    }
 
     //  loo transactionService alla uus teenus                                      createTransactionForNewAccount()
     //  loo bankService alla uus teenus                                             addTransaction()

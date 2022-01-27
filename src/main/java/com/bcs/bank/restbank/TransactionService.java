@@ -104,7 +104,7 @@ public class TransactionService {
                 bank.addTransactionToTransaction(transactionDto);
                 bank.incrementTransactionId();
 
-               // uuendame konto balance'it
+                // uuendame konto balance'it
                 account.setBalance(newBalance);
 
                 // meisterdame valmis result objekti
@@ -149,7 +149,7 @@ public class TransactionService {
                     requestResult.setError("Not enough money:  " + amount);
                     return requestResult;
                 }
-                 // arvutame uue balance ( saatjalt võtame raha maha)
+                // arvutame uue balance ( saatjalt võtame raha maha)
                 newBalance = balance - amount;
 
                 // täidame ära transactioni
@@ -171,7 +171,7 @@ public class TransactionService {
                 requestResult.setMessage("Successfully sent money");
 
                 // teeme SAAJA transaktsiooni
-                receiverAccountNumber= transactionDto.getReceiverAccountNumber();
+                receiverAccountNumber = transactionDto.getReceiverAccountNumber();
 
                 // kontrollime kas saaja konto number eksisteerib meie panga andmebaasis (bank)
                 if (accountService.accountNumberExist(accounts, receiverAccountNumber)) {
@@ -198,40 +198,6 @@ public class TransactionService {
 
                 }
                 return requestResult;
-            case RECEIVE_MONEY:
-
-                receiverAccountNumber= transactionDto.getReceiverAccountNumber();
-
-                if (!accountService.accountNumberExist(accounts, receiverAccountNumber)) {
-                    requestResult.setError("No such account number exists:  " + receiverAccountNumber);
-                    return requestResult;
-                }
-                AccountDto receiverAccount = accountService.getAccountByNumber(accounts, receiverAccountNumber);
-
-
-                //arvuta välja uus balance ja muuda see ka kontol ära
-                newBalance = balance + amount;
-
-                // täidame ära transactioni
-                transactionDto.setSenderAccountNumber(ATM);
-                transactionDto.setReceiverAccountNumber(account.getAccountNumber());
-                transactionDto.setBalance(newBalance);
-                transactionDto.setLocalDateTime(LocalDateTime.now());
-                transactionDto.setId(transactionId);
-
-                // lisame tehingu transactionite alla (+ inkrementeerime)
-                bank.addTransactionToTransaction(transactionDto);
-                bank.incrementTransactionId();
-
-                // uuendame konto balance'it
-                account.setBalance(newBalance);
-
-                // meisterdame valmis result objekti
-                requestResult.setTransactionId(transactionId);
-                requestResult.setAccountId(accountId);
-                requestResult.setMessage("Successfully made deposit transaction");
-
-
 
             default:
                 requestResult.setError("Unknown transaction type: " + transactionType);
@@ -239,6 +205,37 @@ public class TransactionService {
 
         }
 
+    }
+
+    public RequestResult ReceiveNewTransaction(Bank bank, TransactionDto transactionDto) {
+        RequestResult requestResult = new RequestResult();
+        String receiverAccountNumber = transactionDto.getReceiverAccountNumber();
+        List<AccountDto> accounts = bank.getAccounts();
+
+        if (!accountService.accountNumberExist(accounts, receiverAccountNumber)) {
+            requestResult.setError("No such account in our bank: " + receiverAccountNumber);
+            return requestResult;
+        }
+        AccountDto receiverAccount = accountService.getAccountByNumber(accounts, receiverAccountNumber);
+        int transactionId = bank.getTransactionIdCount();
+
+        int receiverNewBalance = receiverAccount.getBalance() + transactionDto.getAmount();
+
+        transactionDto.setTransactionType(RECEIVE_MONEY);
+        transactionDto.setBalance(receiverNewBalance);
+        transactionDto.setId(transactionId);
+        transactionDto.setAccountId(receiverAccount.getId());
+        transactionDto.setLocalDateTime(LocalDateTime.now());
+
+        bank.addTransactionToTransaction(transactionDto);
+        bank.incrementTransactionId();
+        receiverAccount.setBalance(receiverNewBalance);
+
+        requestResult.setTransactionId(transactionId);
+        requestResult.setMessage("Transaction received");
+
+
+        return requestResult;
     }
 
 
