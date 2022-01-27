@@ -46,7 +46,13 @@ public class BankController {
     }
     @PutMapping("/update/owner")
     public RequestResult updateOwnerDetails(@RequestBody AccountDto accountDto) {
-        return  accountService.updateOwnerDetails(bank.getAccounts(),accountDto);
+        return accountService.updateOwnerDetails(bank.getAccounts(), accountDto);
+    }
+    // TODO Lock account / make sure wrong account id is handled| tehke endpoint millega saab kontot lukustada ja avada ja kontollige ID olemasolu
+
+    @DeleteMapping("/delete/account")
+    public RequestResult deleteAccount(@RequestParam  int accountId) {
+        return accountService.deleteAccount(bank.getAccounts(),accountId);
     }
 
     //  loo transactionService alla uus teenus                                      createTransactionForNewAccount()
